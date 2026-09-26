@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Журнал экспресс-диагностики врождённых задатков</title>
+<style>
+:root{
+  --primary:#1a3a6b; --primary-light:#2c5aa0; --accent:#00a8e8;
+  --success:#28a745; --danger:#c0392b; --warning:#e67e22;
+  --bg:#f0f4f8; --card:#ffffff; --text:#1f2d3d; --muted:#6b7c93;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+  background:var(--bg); color:var(--text); line-height:1.5;
+  padding:0 0 80px; font-size:16px;
+}
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* ШАПКА */
+.topbar{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 60%,var(--accent) 100%);
+  color:#fff; padding:14px 16px; position:sticky; top:0; z-index:100;
+  box-shadow:0 3px 12px rgba(26,58,107,.25);
+}
+.topbar h1{margin:0; font-size:16px; font-weight:700; letter-spacing:.2px;}
+.topbar .sub{font-size:11.5px; opacity:.85; margin-top:2px;}
+.topbar .back{
+  background:rgba(255,255,255,.2); border:none; color:#fff;
+  width:32px; height:32px; border-radius:50%; font-size:18px;
+  cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+  margin-right:10px; vertical-align:middle; padding:0;
+}
+.topbar-row{display:flex; align-items:center;}
+
+/* КОНТЕЙНЕР */
+.wrap{padding:12px; max-width:900px; margin:0 auto;}
+
+/* КНОПКИ */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  padding:11px 16px; font-size:14px; font-weight:600; border:none;
+  border-radius:10px; cursor:pointer; font-family:inherit;
+  transition:transform .1s, box-shadow .2s; white-space:nowrap;
+}
+.btn:active{transform:scale(.97);}
+.btn-block{width:100%;}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:#fff;}
+.btn-success{background:linear-gradient(135deg,#28a745,#34c759); color:#fff;}
+.btn-purple{background:linear-gradient(135deg,#7b2ff7,#9d4edd); color:#fff;}
+.btn-gray{background:#8a94a6; color:#fff;}
+.btn-outline{background:#fff; color:var(--primary); border:1.5px solid var(--primary-light);}
+.btn-danger{background:#fff; color:var(--danger); border:1.5px solid #e6b0ab;}
+.btn-sm{padding:7px 11px; font-size:12.5px; border-radius:8px;}
+.btn-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
+.btn-row .btn{flex:1 1 auto;}
+
+/* КАРТОЧКИ */
+.card{
+  background:var(--card); border-radius:12px; padding:14px;
+  margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.card-title{
+  font-size:14px; font-weight:700; color:var(--primary);
+  margin:0 0 10px; display:flex; align-items:center; gap:6px;
+}
+
+/* СПИСОК ДЕТЕЙ */
+.kid-row{
+  background:#fff; border-radius:10px; padding:12px 14px;
+  margin-bottom:8px; box-shadow:0 1px 4px rgba(0,0,0,.06);
+  border-left:4px solid #d0d8e0; display:flex; align-items:center;
+  gap:10px; cursor:pointer; transition:border-color .2s;
+}
+.kid-row.done{border-left-color:var(--success);}
+.kid-row .kr-main{flex:1; min-width:0;}
+.kid-row .kr-name{font-weight:600; font-size:15px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.kid-row .kr-meta{font-size:12px; color:var(--muted); margin-top:2px;}
+.kid-row .kr-badge{
+  font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:12px;
+  background:#e8eef5; color:var(--muted); white-space:nowrap;
+}
+.kid-row.done .kr-badge{background:#d4edda; color:#1a6b3a;}
+.kid-row .kr-del{
+  background:transparent; border:none; color:#c0392b; font-size:18px;
+  cursor:pointer; padding:4px 6px; border-radius:6px;
+}
+.empty{
+  text-align:center; padding:30px 20px; color:var(--muted);
+  background:#fff; border-radius:12px; font-size:14px; border:2px dashed #d0d8e0;
+}
+
+/* ПОЛЯ */
+.field{margin-bottom:10px;}
+.field label{display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:4px;}
+.field input, .field textarea{
+  width:100%; padding:10px 12px; border:1.5px solid #d0d8e0;
+  border-radius:9px; font-size:15px; font-family:inherit; background:#fff;
+}
+.field input:focus, .field textarea:focus{
+  outline:none; border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,168,232,.15);
+}
+
+/* ТЕСТЫ */
+.test-row{
+  background:#fff; padding:12px 14px; margin-bottom:8px; border-radius:10px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06); border-left:4px solid var(--primary-light);
+  transition:border-color .3s;
+}
+.test-row.filled{border-left-color:var(--success);}
+.test-title{
+  font-weight:600; margin-bottom:8px; color:var(--text); font-size:13.5px;
+  display:flex; align-items:center; gap:7px; line-height:1.35;
+}
+.test-title .check{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:18px; height:18px; border-radius:50%; background:#e8eef5;
+  color:#b0bcc9; font-size:11px; font-weight:700; flex-shrink:0;
+  transition:all .3s;
+}
+.test-row.filled .test-title .check{background:var(--success); color:#fff;}
+.test-item{
+  display:flex; align-items:flex-start; gap:9px; font-size:13.5px;
+  cursor:pointer; padding:7px 9px; border-radius:8px; transition:background .15s;
+}
+.test-item:active{background:#f4f8fc;}
+.test-item input{
+  width:19px; height:19px; cursor:pointer; margin-top:1px;
+  accent-color:var(--accent); flex-shrink:0;
+}
+.test-item input:checked + span{font-weight:600; color:var(--primary);}
+/* ============================================================
+   ПАНЕЛЬ ДАТЫ
+   ============================================================ */
+.date-bar{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; padding:10px 14px; margin-bottom:8px;
+  background:linear-gradient(135deg,#eef4fa,#e3f2fd);
+  border:1.5px solid #cfe0f0; border-radius:12px;
+}
+.date-arrow{
+  background:#fff; border:1.5px solid var(--primary-light);
+  color:var(--primary); width:38px; height:38px;
+  border-radius:50%; font-size:18px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  padding:0; flex-shrink:0;
+}
+.date-arrow:active{background:#eef4fa;}
+.date-center{flex:1; text-align:center; min-width:0;}
+.date-label{
+  font-size:11px; color:var(--muted); font-weight:600;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.date-value{
+  font-size:17px; font-weight:700; color:var(--primary);
+  margin-top:2px;
+}
+.date-actions{
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;
+}
+.date-actions .btn{flex:1 1 auto;}
+.date-bar.all-days .date-value{color:var(--muted); font-style:italic;}
+</style>
+</head>
+<body><!-- ===== ЭКРАН 1: ДЕТИ ===== -->
+<div class="screen active" id="screenList">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <h1>Журнал экспресс-диагностики врождённых задатков</h1>
+        <div class="sub">Рабочий журнал инструктора по спорту · 4–6 лет</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+<div class="date-bar">
+  <button class="date-arrow" onclick="changeDate(-1)">←</button>
+  <div class="date-center">
+    <div class="date-label">День тестирования</div>
+    <div class="date-value" id="currentDate">—</div>
+  </div>
+  <button class="date-arrow" onclick="changeDate(1)">→</button>
+</div>
+<div class="date-actions">
+  <button class="btn btn-outline btn-sm" onclick="goToday()">📅 Сегодня</button>
+  <button class="btn btn-outline btn-sm" onclick="showAllDays()">📚 Все дни</button>
+</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addKid()">➕ Добавить ребёнка</button>
+      <button class="btn btn-outline btn-sm" onclick="openHelp()">❓ Как передать JSON</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-success btn-sm" onclick="exportJSON()">💾 Экспорт JSON</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('importFile').click()">📂 Импорт JSON</button>
+      <button class="btn btn-outline btn-sm" onclick="printBlank()">🖨 Печать бланка</button>
+    </div>
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
+
+    <div class="card">
+      <div class="card-title">👥 Дети в журнале <span id="kidCounter" style="margin-left:auto; background:#e8eef5; color:var(--primary); font-size:12px; padding:2px 9px; border-radius:10px;">0</span></div>
+      <div id="kidList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Сводная ведомость</div>
+      <div class="btn-row">
+        <button class="btn btn-outline btn-sm" onclick="printSummary(false)">🖨 С ФИО</button>
+        <button class="btn btn-outline btn-sm" onclick="printSummary(true)">🖨 Обезличенная</button>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-top:6px;">
+        Обезличенный вариант — без ФИО, только коды «Ребёнок №N». Для показа третьим лицам.
+      </div>
+    </div>
+    
+<div class="card">
+  <div class="card-title">👤 Данные инструктора</div>
+  <div class="field">
+    <label>ФИО инструктора</label>
+    <input type="text" id="instructorName" placeholder="Петрова Анна Сергеевна" oninput="saveInstructor()">
+  </div>
+  <div class="field" style="margin-bottom:0;">
+    <label>Номер удостоверения</label>
+    <input type="text" id="instructorId" placeholder="№ 12345" oninput="saveInstructor()">
+  </div>
+</div>
+  </div>
+</div>
+
+<!-- ===== ЭКРАН 2: КАРТОЧКА РЕБЁНКА ===== -->
+<div class="screen" id="screenKid">
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="back" onclick="backToList()">←</button>
+      <div>
+        <h1 id="kidTitle">Карточка ребёнка</h1>
+        <div class="sub">Заполните 12 тестов</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="card-title">🧒 Данные ребёнка</div>
+      <div class="field">
+        <label>ФИО ребёнка</label>
+        <input type="text" id="kidName" placeholder="Иванов Иван" oninput="markDirty()">
+      </div>
+      <div class="field">
+        <label>Возраст</label>
+        <input type="text" id="kidAge" placeholder="5 лет" oninput="markDirty()">
+      </div>
+      <div class="field">
+        <label>Дата тестирования</label>
+        <input type="text" id="kidDate" placeholder="23.09.2026" oninput="markDirty()">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary btn-block" onclick="calcKid()">📊 Рассчитать профиль</button>
+    </div>
+
+    <form id="sportsForm" onsubmit="return false;">
+
+      <div class="test-row" data-test="t1">
+        <div class="test-title"><span class="check">✓</span> Т1. Лицо (Сиго): осмотр анфас/профиль</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t1" value="П1"><span>Тонкое / Вытянутое (Церебральный) — П1</span></label>
+          <label class="test-item"><input type="radio" name="t1" value="П2"><span>Мускульное (Плотный рельеф) — П2</span></label>
+          <label class="test-item"><input type="radio" name="t1" value="П5"><span>Округлое / Бледное (Сенсорное) — П5</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t2">
+        <div class="test-title"><span class="check">✓</span> Т2. Рычаги тела: сравнение длины ног и туловища</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t2" value="П1"><span>Длинные / Тонкие — П1</span></label>
+          <label class="test-item"><input type="radio" name="t2" value="П2"><span>Пропорциональные / Плотные — П2</span></label>
+          <label class="test-item"><input type="radio" name="t2" value="П6"><span>Короткие / Диспропорция тонуса — П6</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t3">
+        <div class="test-title"><span class="check">✓</span> Т3. Запястье (Индекс Соловьева): обхват самого узкого места</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t3" value="П1"><span>Тонкое (Тонкая кость) — П1</span></label>
+          <label class="test-item"><input type="radio" name="t3" value="П2"><span>Среднее — П2</span></label>
+          <label class="test-item"><input type="radio" name="t3" value="П4"><span>Плотное / Широкое (Толстая кость) — П4</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t4">
+        <div class="test-title"><span class="check">✓</span> Т4. Архитектура голени: уровень икроножной мышцы</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t4" value="П2"><span>Высокое крепление мышцы (Высокий ахилл) — П2</span></label>
+          <label class="test-item"><input type="radio" name="t4" value="П4"><span>Низкое крепление мышцы (Длинная голень) — П4</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t5">
+        <div class="test-title"><span class="check">✓</span> Т5. «Кулак — ладонь» (Подвижность НС)</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t5" value="П2"><span>Мгновенное переключение, высокая скорость — П2</span></label>
+          <label class="test-item"><input type="radio" name="t5" value="П4"><span>Медленный и стабильный темп — П4</span></label>
+          <label class="test-item"><input type="radio" name="t5" value="П6"><span>Затруднения, ступор, движения не в такт — П6</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t6">
+        <div class="test-title"><span class="check">✓</span> Т6. «Быстрые ноги» (Лабильность НС): частое топанье стопами сидя на стуле</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t6" value="П2"><span>Высокая частота движений, плотный рисунок — П2</span></label>
+          <label class="test-item"><input type="radio" name="t6" value="П4"><span>Спокойный, ровный темп — П4</span></label>
+          <label class="test-item"><input type="radio" name="t6" value="П5"><span>Медленный темп, быстро устаёт — П5</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t7">
+        <div class="test-title"><span class="check">✓</span> Т7. Баланс «Цапля» (Статический баланс, глаза закрыты, 15–20 сек)</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t7" value="П1"><span>Уверенно держит более 15–20 сек — П1</span></label>
+          <label class="test-item"><input type="radio" name="t7" value="П3"><span>Средний показатель баланса — П3</span></label>
+          <label class="test-item"><input type="radio" name="t7" value="П6"><span>Быстро теряет баланс / падает — П6</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t8">
+        <div class="test-title"><span class="check">✓</span> Т8. Поворотный тест (Вестибулярный аппарат): 2 оборота + шаг</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t8" value="П3"><span>Уверенно идёт прямо после вращения — П3</span></label>
+          <label class="test-item"><input type="radio" name="t8" value="П4"><span>Немного уводит в сторону, качает — П4</span></label>
+          <label class="test-item"><input type="radio" name="t8" value="П6"><span>Сильный ступор / потеря ориентации — П6</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t9">
+        <div class="test-title"><span class="check">✓</span> Т9. Наклон вперед (Связки): стоя на скамье или сидя</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t9" value="П1"><span>Свободно и глубоко ниже стоп (Мягкие связки) — П1</span></label>
+          <label class="test-item"><input type="radio" name="t9" value="П3"><span>Достаёт до стоп / норма — П3</span></label>
+          <label class="test-item"><input type="radio" name="t9" value="П4"><span>Жёстко, сильное натяжение мышц — П4</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t10">
+        <div class="test-title"><span class="check">✓</span> Т10. «Светофор» (Уравновешенность НС): стоп по сигналу в эстафете</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t10" value="П3"><span>Точный стоп по сигналу (уравновешенная НС) — П3</span></label>
+          <label class="test-item"><input type="radio" name="t10" value="П2"><span>Пробегает мимо, срыв торможения — П2</span></label>
+          <label class="test-item"><input type="radio" name="t10" value="П6"><span>Суетится, путается или замирает от стресса — П6</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t11">
+        <div class="test-title"><span class="check">✓</span> Т11. «Взрывной прыжок» в длину с места (Мышечные волокна)</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t11" value="П2"><span>Мощно и далеко (Взрывные волокна) — П2</span></label>
+          <label class="test-item"><input type="radio" name="t11" value="П4"><span>Короткий или тяжёлый прыжок — П4</span></label>
+        </div>
+      </div>
+
+      <div class="test-row" data-test="t12">
+        <div class="test-title"><span class="check">✓</span> Т12. «Счетные палочки» / Тэппинг (Сила НС при усталости)</div>
+        <div>
+          <label class="test-item"><input type="radio" name="t12" value="П4"><span>Ровный, быстрый темп до самого конца, без ошибок — Ровно</span></label>
+          <label class="test-item"><input type="radio" name="t12" value="П2"><span>Быстрый темп, но частая спешка и ошибки — П2</span></label>
+          <label class="test-item"><input type="radio" name="t12" value="П5"><span>Медленный старт, усталость уже через 10 секунд — П5</span></label>
+          <label class="test-item"><input type="radio" name="t12" value="П6"><span>К концу — усталость, дрожь, отказ от задания — Хаос</span></label>
+        </div>
+      </div>
+
+    </form>
+
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn btn-success btn-block" onclick="saveKid()">💾 Сохранить ребёнка</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-outline btn-sm" onclick="backToList()">← К списку</button>
+      <button class="btn btn-danger btn-sm" onclick="cancelCurrentKid()">✕ Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ЭКРАН 3: РЕЗУЛЬТАТ ===== -->
+<div class="screen" id="screenResult">
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="back" onclick="backToKid()">←</button>
+      <div>
+        <h1>Паспорт ребёнка</h1>
+        <div class="sub">Результат экспресс-диагностики</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" id="resultContent"></div>
+</div><!-- ===== ЭКРАН: ПАМЯТКА ===== -->
+<div class="screen" id="screenHelp">
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="back" onclick="closeHelp()">←</button>
+      <div>
+        <h1>Как передать JSON</h1>
+        <div class="sub">Между устройствами</div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="card">
+      <div class="card-title">📤 Основной способ — LocalSend</div>
+      <p style="font-size:14px; margin:0 0 8px;">
+        Работает <strong>без интернета</strong>, устройства видят друг друга по Wi-Fi.
+      </p>
+      <ol style="font-size:13.5px; padding-left:20px; margin:0;">
+        <li>Оба устройства подключены к одной Wi-Fi сети (или один телефон раздаёт точку доступа).</li>
+        <li>Установите <strong>LocalSend</strong> на оба устройства (бесплатно, Android и iPhone).</li>
+        <li>На одном устройстве: «Отправить» → выбрать файл JSON → выбрать второе устройство.</li>
+        <li>На втором: принять файл → открыть журнал → «Импорт JSON».</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📤 Резерв — WhatsApp</div>
+      <p style="font-size:14px; margin:0 0 8px;">
+        Если Wi-Fi нет, но ловит мобильный интернет.
+      </p>
+      <ol style="font-size:13.5px; padding-left:20px; margin:0;">
+        <li>Отправьте файл <strong>самому себе</strong> (в «Избранное» / «Заметки»).</li>
+        <li>На втором устройстве скачайте из этого же чата.</li>
+        <li>После использования — <strong>удалите файл из чата</strong>.</li>
+      </ol>
+      <div style="margin-top:8px; padding:8px 10px; background:#fdf2f2; border-left:3px solid var(--danger); border-radius:6px; font-size:12.5px;">
+        ⚠️ Не пересылайте третьим лицам. ФИО детей — персональные данные.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📤 Если ничего не работает</div>
+      <ul style="font-size:13.5px; padding-left:20px; margin:0;">
+        <li><strong>Яндекс.Диск</strong> — загрузить → скачать на другом устройстве.</li>
+        <li><strong>ВК</strong> — закрытый чат с самим собой, файл в сообщении.</li>
+        <li><strong>USB-кабель</strong> — если рядом ноутбук, режим «Передача файлов».</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚠️ Персональные данные</div>
+      <ul style="font-size:13.5px; padding-left:20px; margin:0;">
+        <li>Передавайте только себе или ассистенту.</li>
+        <li>Не выкладывайте в общие чаты и группы.</li>
+        <li>После использования удаляйте файлы из мессенджеров.</li>
+        <li>Печатные формы — «Для внутреннего использования».</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== МОДАЛЬНОЕ ОКНО: ДОКУМЕНТ РОДИТЕЛЯМ ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📄 Документ для родителей</h3>
+      <button class="modal-close" onclick="closeParentDoc()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="printParentDoc()">🖨 Печать / PDF</button>
+      <button class="btn btn-purple btn-sm" onclick="downloadParentDoc()">💾 Скачать HTML</button>
+      <button class="btn btn-gray btn-sm" onclick="closeParentDoc()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== МОДАЛЬНОЕ ОКНО: ПОДТВЕРЖДЕНИЕ ===== -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3 id="confirmTitle">Подтверждение</h3>
+      <button class="modal-close" onclick="closeConfirm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmText" style="font-size:14.5px; margin:0 0 14px;"></p>
+      <div class="btn-row" style="margin:0;">
+        <button class="btn btn-gray" onclick="closeConfirm()">Отмена</button>
+        <button class="btn btn-danger" id="confirmOk">Удалить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* СТИЛИ МОДАЛЬНЫХ ОКОН */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(15,25,45,.65);
+  display:none; align-items:center; justify-content:center;
+  z-index:1000; padding:16px; backdrop-filter:blur(3px);
+}
+.modal-overlay.show{display:flex;}
+.modal{
+  background:#fff; border-radius:14px; max-width:820px; width:100%;
+  max-height:92vh; display:flex; flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,.3); overflow:hidden;
+}
+.modal-header{
+  padding:13px 18px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-light));
+  color:#fff; display:flex; justify-content:space-between; align-items:center;
+}
+.modal-header h3{margin:0; font-size:15.5px;}
+.modal-close{
+  background:rgba(255,255,255,.2); border:none; color:#fff;
+  width:30px; height:30px; border-radius:50%; font-size:16px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;
+}
+.modal-close:active{background:rgba(255,255,255,.35);}
+.modal-body{padding:20px; overflow-y:auto; flex:1;}
+.modal-footer{
+  padding:12px 18px; border-top:1px solid #e8eef5;
+  display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;
+  background:#f9fbfd;
+}
+@media print{
+  body *{visibility:hidden;}
+  .modal-overlay, .modal-overlay *{visibility:visible;}
+  .modal-overlay{position:absolute; inset:0; background:#fff; padding:0; display:block !important;}
+  .modal{max-height:none; box-shadow:none; border-radius:0;}
+  .modal-header, .modal-footer{display:none !important;}
+  .modal-body{overflow:visible; padding:0;}
+}
+</style>
+<script>
+/* ============================================================
+   ДАННЫЕ ПРОФИЛЕЙ (П1–П6)
+   ============================================================ */
+var PROFILES = {
+  "П1": {
+    code: "П1",
+    shortName: "«Ювелир: Грация и Пластика»",
+    fullName: "«Ювелир: Грация и Пластика» (Астено-Хордальный тип)",
+    sports: "Художественная и спортивная гимнастика, фигурное катание, балет, синхронное плавание.",
+    sportsParent: "Художественная и спортивная гимнастика, фигурное катание, балет, синхронное плавание.",
+    prepNote: "В группу предварительной подготовки принимаются дети с 4 лет. Смежные виды: хореография, детская йога, акробатика.",
+    psych: "НС средняя или сильная, высокочувствительная. Высокая лабильность, устойчивость к монотонным красивым позам.",
+    psychoParent: "Нервная система средняя или сильная, но очень чувствительная. Ребёнок хорошо переносит повторяющиеся плавные движения, сохраняет концентрацию.",
+    morphoParent: "Тонкая и лёгкая кость, вытянутое лицо, длинные тонкие конечности. Врождённая высокая гибкость, податливые связки.",
+    risks: "Повышенная ранимость. Жёсткий крик и давление вызывают психологические срывы. Нужен бережный подход.",
+    risksParent: "Повышенная ранимость. Жёсткое давление и крик могут вызвать психологический срыв. Необходим бережный поддерживающий подход.",
+    school: "Хорошая концентрация и усидчивость на монотонной работе. Склонность к аккуратности, эстетике, тонкой моторике. Уязвим к резкой критике — важна поддерживающая среда.",
+    career: "Хореография, гимнастика, фигурное катание, тренерская работа, физиотерапия, реабилитация, дизайн, архитектура, ювелирное дело, музыка, живопись."
+  },
+  "П2": {
+    code: "П2",
+    shortName: "«Спринтер: Взрывная сила и Реакция»",
+    fullName: "«Спринтер: Взрывная сила и Реакция» (Мезоморфный реактивный тип)",
+    sports: "Спринтерский бег, акробатика, прыжки в воду, боевые движения (ушу, каратэ).",
+    sportsParent: "Спринтерский бег, акробатика, прыжки в воду, боевые искусства (ушу, каратэ).",
+    prepNote: "В группу предварительной подготовки принимаются дети с 5–6 лет. Смежные виды: лёгкая атлетика, плавание, подвижные игры с мячом.",
+    psych: "Сильная НС с преобладанием возбуждения над торможением. Экстремально высокая лабильность — мгновенный отклик на стартовый сигнал.",
+    psychoParent: "Сильная нервная система, но возбуждение преобладает над торможением. Очень быстро реагирует на сигнал, мгновенно включается в движение.",
+    morphoParent: "Крепкое, соразмерное сложение. Плотный мышечный рельеф виден даже в 5 лет. Высокий ахилл («пружина» в ногах), прыгает дальше всех в группе.",
+    risks: "Дефицит торможения. Ребёнку тяжело мгновенно замереть по команде «Стоп!», импульсивность.",
+    risksParent: "Импульсивность. Ребёнку трудно мгновенно остановиться по команде «Стоп!». Требуется терпеливая работа над торможением.",
+    school: "Быстро схватывает материал в формате игр, соревнований и коротких задач. Тяжело даётся монотонная работа. Нужны короткие задания с чёткими дедлайнами и сменой активности.",
+    career: "Профессиональный спорт (спринт, единоборства), тренерская работа, спасатель, военные и силовые структуры, МЧС, каскадёр, акробат, водитель спецтехники, хирург."
+  },
+  "П3": {
+    code: "П3",
+    shortName: "«Игрок: Интеллект и Маневр»",
+    fullName: "«Игрок: Интеллект и Маневр» (Адаптивный ситуационный тип)",
+    sports: "Игровые виды (футбол, хоккей, баскетбол, волейбол), большой теннис, бадминтон.",
+    sportsParent: "Игровые виды спорта (футбол, хоккей, баскетбол, волейбол), большой теннис, бадминтон.",
+    prepNote: "В группу предварительной подготовки принимаются дети с 4–5 лет. Смежные виды: подвижные командные игры, плавание, лёгкая атлетика.",
+    psych: "Сильная, уравновешенная, высокоподвижная НС. Мгновенное переключение в условиях хаоса, эстафет и дефицита времени.",
+    psychoParent: "Сильная, уравновешенная и очень подвижная нервная система. Мгновенно переключается между задачами, отлично действует в условиях дефицита времени.",
+    morphoParent: "Пропорциональное атлетическое тело, мускульный тип лица. Выдающаяся зрительно-моторная координация: сходу понимает траекторию мяча, легко ловит и точно бросает.",
+    risks: "Быстро теряет интерес при монотонной, линейной работе без соревновательного элемента.",
+    risksParent: "Быстро теряет интерес к монотонной работе без соревновательного элемента. Нужны игровые форматы и регулярная смена заданий.",
+    school: "Высокий потенциал в ситуативных, командных и проектных задачах. Быстро читает обстановку и принимает решения. Слабое место — рутина без обратной связи. Хорош в дискуссиях и коллективных проектах.",
+    career: "Профессиональный спорт (игровые виды), тренер, спортивный менеджер, предприниматель, менеджер проектов, дипломат, журналист, режиссёр, организатор мероприятий, аналитик, лётчик."
+  },
+  "П4": {
+    code: "П4",
+    shortName: "«Атлет / Марафонец: Стабильность и Резерв»",
+    fullName: "«Атлет / Марафонец: Стабильность и Резерв» (Гиперстенический силовой тип)",
+    sports: "Борьба, дзюдо, самбо, тяжёлая атлетика, плавание на длинные дистанции, лыжные гонки.",
+    sportsParent: "Борьба, дзюдо, самбо, тяжёлая атлетика, плавание на длинные дистанции, лыжные гонки.",
+    prepNote: "В группу предварительной подготовки принимаются дети с 6 лет (единоборства) и с 5 лет (плавание, лыжи). Смежные виды: биатлон, триатлон.",
+    psych: "Сильная, уравновешенная НС инертного типа. Долгая врабатываемость, затем — устойчивая работа и высокая выносливость к монотонии и жёсткому контакту.",
+    psychoParent: "Сильная, уравновешенная, но инертная нервная система. Долго «включается» в работу, зато затем показывает высокую выносливость и стабильность.",
+    morphoParent: "Широкая толстая кость, крупные суставы, плотное телосложение. Низкий ахилл, длинная мощная мышца голени. Низкий центр тяжести — прочно стоит на ногах.",
+    risks: "Низкая лабильность: ребёнок физически не умеет суетиться и спешить. На этапе разучивания новых движений требуется больше времени, чем сверстникам.",
+    risksParent: "Ребёнка нельзя торопить на этапе разучивания новых движений — ему нужно больше времени, чем сверстникам. Зато результат будет стабильным и долговечным.",
+    school: "Медленно включается, затем работает долго, стабильно, без срывов. Хорошо даются объёмные, последовательные, требующие усидчивости предметы. Отличная память на факты и правила. Не любит цейтнот и внезапные смены задачи — нужен предсказуемый режим.",
+    career: "Профессиональный спорт (силовые и циклические виды), тренер, инженер, программист (долгие проекты), бухгалтер, юрист, врач-хирург, геолог, военный, строитель, научный сотрудник."
+  },
+  "П5": {
+    code: "П5",
+    shortName: "«Сенсорная чувствительность»",
+    fullName: "«Сенсорная чувствительность» (Хрупкий реактивный профиль)",
+    sports: "Большой спорт противопоказан. Рекомендовано: ОФП, детская йога, оздоровительное плавание, конный спорт.",
+    sportsParent: "Профессиональный большой спорт противопоказан. Рекомендованы оздоровительные направления: ОФП, детская йога, оздоровительное плавание, конный спорт.",
+    prepNote: "В группы предварительной подготовки по игровым и силовым видам не рекомендуется. Допустимы оздоровительные группы и секции мягкой направленности.",
+    psych: "Слабая, неуравновешенная НС. Мгновенно уходит в охранительное торможение: зажимается, плачет, устаёт уже через 10 минут нагрузки. Высокая ранимость.",
+    psychoParent: "Слабая, неуравновешенная нервная система. Быстро устаёт, зажимается, может заплакать уже через 10 минут нагрузки. Очень высокая ранимость.",
+    morphoParent: "Очень тонкая кость, бледная кожа, слабый мышечный тонус. Болезненно реагирует на громкие звуки, свисток, шум и случайные касания.",
+    risks: "Риск неврозов, тиков и панического страха перед спортом при малейшем давлении.",
+    risksParent: "Высокий риск неврозов, тиков и панического страха перед спортом при малейшем давлении. Категорически противопоказаны крик и жёсткие требования.",
+    school: "Тонкая эмоциональная организация, чувствительность к атмосфере в классе. Лучше учится в малых группах, индивидуально, в тишине, без спешки. Нужны поощрение и щадящий режим. В благоприятных условиях — глубокая, вдумчивая, творческая личность.",
+    career: "Психология, педагогика (мягкие методики), искусство (музыка, живопись, литература), ветеринария, флористика, библиотечное дело, коррекционная педагогика, дефектология, реставрация, работа с животными."
+  },
+  "П6": {
+    code: "П6",
+    shortName: "«Асинхронный / Диспраксический тип»",
+    fullName: "«Асинхронный / Диспраксический тип» (Специфический профиль коррекции)",
+    sports: "Жёсткий спорт закрыт. Рекомендовано: скалолазание (боулдеринг), бесконтактное ушу (таолу), адаптивная физкультура (АФК).",
+    sportsParent: "Профессиональный жёсткий спорт противопоказан. Рекомендованы направления для выравнивания координации: скалолазание (боулдеринг), бесконтактное ушу (таолу), адаптивная физкультура (АФК).",
+    prepNote: "В группы предварительной подготовки по игровым и силовым видам не рекомендуется. Допустимы группы АФК, скалолазание и бесконтактные единоборства.",
+    psych: "Слабая или средняя инертная НС. Реакция на движущийся объект невпопад. Внимание неустойчивое. Высокий болевой порог.",
+    psychoParent: "Слабая или средняя инертная нервная система. Реакция на движущийся объект идёт с искажением. Внимание неустойчивое, но при этом высокий болевой порог.",
+    morphoParent: "Диспропорция мышечного тонуса — ребёнок кажется «неуклюжим», движения смазанные. При этом может упасть, удариться, но не заметить синяков и не заплакать.",
+    risks: "Высокий травматизм при стандартных нагрузках. Жёсткие рамки ведут к накоплению хронического стресса.",
+    risksParent: "Высокий риск травматизма при стандартных нагрузках. Жёсткие рамки и давление ведут к накоплению хронического стресса. Рекомендован индивидуальный маршрут и помощь специалистов (нейропсихолог, логопед, дефектолог).",
+    school: "Нужен индивидуальный маршрут и помощь специалистов (нейропсихолог, логопед, дефектолог). Материал лучше усваивается через движение, наглядность и короткие повторяющиеся блоки. Сильные стороны — терпимость к боли, упорство в интересной деятельности, образное мышление.",
+    career: "Адаптивная физкультура, скалолазание, ушу (таолу), ремесленные специальности, работа руками (столяр, керамист), садоводство, работа с животными, творческие мастерские, тестирование ПО, коррекционная педагогика."
+  }
+};
+
+var PROFILE_ORDER = ["П1","П2","П3","П4","П5","П6"];
+var TESTS = ["t1","t2","t3","t4","t5","t6","t7","t8","t9","t10","t11","t12"];
+var STORAGE_KEY = "sportJournal_v3";
+
+/* ============================================================
+   СОСТОЯНИЕ
+   ============================================================ */
+var journal = { kids: [] };
+var currentKidId = null;
+var currentKidIsNew = false;
+var dirty = false;
+var currentFilterDate = todayStr(); // текущая дата фильтра; null = показывать все дни
+/* ============================================================
+   УПРАВЛЕНИЕ ДАТОЙ
+   ============================================================ */
+function changeDate(delta){
+  var base = currentFilterDate || todayStr();
+  var parts = base.split(".");
+  var d = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+  d.setDate(d.getDate() + delta);
+  var dd = String(d.getDate()).padStart(2,"0");
+  var mm = String(d.getMonth()+1).padStart(2,"0");
+  var yyyy = d.getFullYear();
+  currentFilterDate = dd + "." + mm + "." + yyyy;
+  updateDateBar();
+  renderList();
+}
+
+function goToday(){
+  currentFilterDate = todayStr();
+  updateDateBar();
+  renderList();
+}
+
+function showAllDays(){
+  currentFilterDate = null;
+  updateDateBar();
+  renderList();
+}
+
+function updateDateBar(){
+  var el = document.getElementById("currentDate");
+  if(!el) return;
+  var bar = document.querySelector(".date-bar");
+  if(currentFilterDate){
+    el.textContent = currentFilterDate;
+    if(bar) bar.classList.remove("all-days");
+  } else {
+    el.textContent = "Все дни";
+    if(bar) bar.classList.add("all-days");
+  }
+}
+
+function getFilteredKids(){
+  if(!currentFilterDate) return journal.kids;
+  return journal.kids.filter(function(k){ return k.date === currentFilterDate; });
+}
+
+/* ============================================================
+   ЗАГРУЗКА / СОХРАНЕНИЕ
+   ============================================================ */
+function loadJournal(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ journal = JSON.parse(raw); }
+    if(!journal.kids) journal.kids = [];
+  }catch(e){ journal = { kids: [] }; }
+}
+
+function saveJournal(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(journal)); }catch(e){
+    alert("Не удалось сохранить данные. Возможно, память браузера переполнена.");
+  }
+}
+function saveInstructor(){
+  var nameEl = document.getElementById("instructorName");
+  var idEl = document.getElementById("instructorId");
+  if(!nameEl || !idEl) return;
+  journal.instructorName = nameEl.value.trim();
+  journal.instructorId = idEl.value.trim();
+  saveJournal();
+}
+
+function loadInstructor(){
+  var nameEl = document.getElementById("instructorName");
+  var idEl = document.getElementById("instructorId");
+  if(!nameEl || !idEl) return;
+  nameEl.value = journal.instructorName || "";
+  idEl.value = journal.instructorId || "";
+}
+function newId(){ return "k_" + Date.now() + "_" + Math.random().toString(36).slice(2,7); }
+
+/* ============================================================
+   ЭКРАНЫ
+   ============================================================ */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+function backToList(){
+  if(dirty && !currentKidIsNew){
+    confirmDialog("Не сохранять изменения?", "В карточке есть несохранённые данные. Выйти без сохранения?", "Выйти", function(){
+      dirty = false;
+      renderList();
+      showScreen("screenList");
+    });
+  } else {
+    dirty = false;
+    renderList();
+    showScreen("screenList");
+  }
+}
+
+function backToKid(){ showScreen("screenKid"); }
+
+function markDirty(){ dirty = true; }
+
+/* ============================================================
+   СПИСОК ДЕТЕЙ
+   ============================================================ */
+function renderList(){
+  var list = document.getElementById("kidList");
+  var counter = document.getElementById("kidCounter");
+  var kids = getFilteredKids();
+  counter.textContent = kids.length;
+
+  if(kids.length === 0){
+    var msg = currentFilterDate
+      ? 'На эту дату нет детей.<br>Нажмите «➕ Добавить ребёнка», чтобы добавить.'
+      : 'Пока нет детей.<br>Нажмите «➕ Добавить ребёнка», чтобы начать.';
+    list.innerHTML = '<div class="empty">' + msg + '</div>';
+    return;
+  }
+
+  var html = "";
+  kids.forEach(function(kid){
+    var done = kid.profile ? "done" : "";
+    var badge = kid.profile ? kid.profile : "—";
+    var age = kid.age ? kid.age : "возраст не указан";
+    html += '<div class="kid-row ' + done + '" onclick="openKid(\'' + kid.id + '\')">';
+    html += '<div class="kr-main">';
+    html += '<div class="kr-name">' + escapeHtml(kid.name || "Без имени") + '</div>';
+    html += '<div class="kr-meta">' + escapeHtml(age) + '</div>';
+    html += '</div>';
+    html += '<div class="kr-badge">' + badge + '</div>';
+    html += '<button class="kr-del" onclick="event.stopPropagation();askDelete(\'' + kid.id + '\')">🗑</button>';
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function addKid(){
+  var kid = {
+    id: newId(),
+    name: "",
+    age: "",
+    date: todayStr(),
+    answers: {},
+    profile: null,
+    counts: null,
+    maxCount: 0
+  };
+  journal.kids.push(kid);
+  currentKidIsNew = true;
+  openKid(kid.id);
+}
+
+function openKid(id){
+  var kid = journal.kids.find(function(k){ return k.id === id; });
+  if(!kid) return;
+  currentKidId = id;
+  document.getElementById("kidTitle").textContent = kid.name || "Карточка ребёнка";
+  document.getElementById("kidName").value = kid.name || "";
+  document.getElementById("kidAge").value = kid.age || "";
+  document.getElementById("kidDate").value = kid.date || todayStr();
+
+  TESTS.forEach(function(t){
+    document.querySelectorAll('input[name="' + t + '"]').forEach(function(r){ r.checked = false; });
+    if(kid.answers && kid.answers[t]){
+      var radio = document.querySelector('input[name="' + t + '"][value="' + kid.answers[t] + '"]');
+      if(radio) radio.checked = true;
+    }
+  });
+  updateAllTestStates();
+  dirty = false;
+  showScreen("screenKid");
+}
+
+function askDelete(id){
+  var kid = journal.kids.find(function(k){ return k.id === id; });
+  if(!kid) return;
+  confirmDialog("Удалить ребёнка?", "Запись «" + (kid.name || "Без имени") + "» будет удалена безвозвратно.", "Удалить", function(){
+    journal.kids = journal.kids.filter(function(k){ return k.id !== id; });
+    saveJournal();
+    renderList();
+  });
+}
+
+function cancelCurrentKid(){
+  if(!currentKidId) return;
+  if(currentKidIsNew){
+    // Новый, несохранённый — просто удаляем без вопросов
+    journal.kids = journal.kids.filter(function(k){ return k.id !== currentKidId; });
+    saveJournal();
+    currentKidId = null;
+    currentKidIsNew = false;
+    dirty = false;
+    renderList();
+    showScreen("screenList");
+  } else {
+    // Сохранённый — предлагаем отменить изменения
+    var kid = journal.kids.find(function(k){ return k.id === currentKidId; });
+    if(!kid) return;
+    confirmDialog("Отменить изменения?", "Изменения в карточке «" + (kid.name || "Без имени") + "» не будут сохранены.", "Отменить", function(){
+      dirty = false;
+      renderList();
+      showScreen("screenList");
+    });
+  }
+}
+
+/* ============================================================
+   СОХРАНЕНИЕ РЕБЁНКА
+   ============================================================ */
+function saveKid(){
+  if(!currentKidId) return;
+  var kid = journal.kids.find(function(k){ return k.id === currentKidId; });
+  if(!kid) return;
+
+  var name = document.getElementById("kidName").value.trim();
+  if(!name){
+    alert("Введите ФИО ребёнка.");
+    return;
+  }
+
+  kid.name = name;
+  kid.age = document.getElementById("kidAge").value.trim();
+  kid.date = document.getElementById("kidDate").value.trim() || todayStr();// Защита от дубликатов: тот же ФИО + та же дата (кроме самого себя)
+var dup = journal.kids.find(function(k){
+  return k.id !== kid.id &&
+         k.name.trim().toLowerCase() === name.toLowerCase() &&
+         k.date === kid.date;
+});
+if(dup){
+  var goOn = confirm("⚠️ Уже есть запись с таким ФИО на " + kid.date + ".\n\nСохранить всё равно?");
+  if(!goOn) return;
+}
+
+  var answers = {};
+  var missing = [];
+  TESTS.forEach(function(t){
+    var checked = document.querySelector('input[name="' + t + '"]:checked');
+    if(checked) answers[t] = checked.value;
+    else missing.push(t.toUpperCase());
+  });
+
+  if(missing.length > 0){
+    alert("Не выбраны ответы в тестах: " + missing.join(", ") + "\n\nЗаполните все 12 тестов и сохраните снова.");
+    return;
+  }
+
+  kid.answers = answers;
+
+  var counts = {};
+  PROFILE_ORDER.forEach(function(p){ counts[p] = 0; });
+  Object.keys(answers).forEach(function(t){
+    if(counts[answers[t]] !== undefined) counts[answers[t]]++;
+  });
+  var dominant = null, maxCount = -1;
+  PROFILE_ORDER.forEach(function(p){
+    if(counts[p] > maxCount){ maxCount = counts[p]; dominant = p; }
+  });
+  kid.counts = counts;
+  kid.profile = dominant;
+  kid.maxCount = maxCount;
+
+  saveJournal();
+  currentKidIsNew = false;
+  dirty = false;
+  alert("✅ Сохранено. Профиль: " + dominant + " — " + PROFILES[dominant].shortName);
+  renderList();
+  showScreen("screenList");
+}
+
+function calcKid(){
+  if(!currentKidId) return;
+  var kid = journal.kids.find(function(k){ return k.id === currentKidId; });
+  if(!kid) return;
+
+  var name = document.getElementById("kidName").value.trim();
+  if(!name){ alert("Введите ФИО ребёнка."); return; }
+  kid.name = name;
+  kid.age = document.getElementById("kidAge").value.trim();
+  kid.date = document.getElementById("kidDate").value.trim() || todayStr();
+
+  var answers = {};
+  var missing = [];
+  TESTS.forEach(function(t){
+    var checked = document.querySelector('input[name="' + t + '"]:checked');
+    if(checked) answers[t] = checked.value;
+    else missing.push(t.toUpperCase());
+  });
+  if(missing.length > 0){
+    alert("Не выбраны ответы в тестах: " + missing.join(", "));
+    return;
+  }
+  kid.answers = answers;
+  var counts = {};
+  PROFILE_ORDER.forEach(function(p){ counts[p] = 0; });
+  Object.keys(answers).forEach(function(t){
+    if(counts[answers[t]] !== undefined) counts[answers[t]]++;
+  });
+  var dominant = null, maxCount = -1;
+  PROFILE_ORDER.forEach(function(p){
+    if(counts[p] > maxCount){ maxCount = counts[p]; dominant = p; }
+  });
+  kid.counts = counts;
+  kid.profile = dominant;
+  kid.maxCount = maxCount;
+  saveJournal();
+  currentKidIsNew = false;
+  dirty = false;
+
+  renderResult(kid);
+  showScreen("screenResult");
+}
+
+function renderResult(kid){
+  var p = PROFILES[kid.profile];
+  var html = "";
+  html += '<div class="card">';
+  html += '<div class="card-title">📋 Паспорт ребёнка</div>';
+  html += '<div style="font-size:13.5px; line-height:1.7;">';
+  html += '<div><strong>ФИО:</strong> ' + escapeHtml(kid.name) + '</div>';
+  html += '<div><strong>Возраст:</strong> ' + escapeHtml(kid.age || "не указан") + '</div>';
+  html += '<div><strong>Дата:</strong> ' + escapeHtml(kid.date) + '</div>';
+  html += '<div><strong>Профиль:</strong> ' + p.code + ' — ' + p.shortName + '</div>';
+  html += '<div><strong>Совпадений:</strong> ' + kid.maxCount + ' из 12</div>';
+  html += '</div></div>';
+
+  html += '<div class="card"><div class="card-title">🏅 Рекомендованные виды спорта</div>';
+  html += '<p style="font-size:14px; margin:0;">' + escapeHtml(p.sports) + '</p></div>';
+
+  html += '<div class="card"><div class="card-title">🧠 Особенности нервной системы</div>';
+  html += '<p style="font-size:14px; margin:0;">' + escapeHtml(p.psych) + '</p></div>';
+
+  html += '<div class="card"><div class="card-title">⚠️ Факторы риска</div>';
+  html += '<p style="font-size:14px; margin:0; color:var(--danger);">' + escapeHtml(p.risks) + '</p></div>';
+
+  html += '<div class="card"><div class="card-title">🎓 Обучаемость в школе (прогноз)</div>';
+  html += '<p style="font-size:14px; margin:0;">' + escapeHtml(p.school) + '</p></div>';
+
+  html += '<div class="card"><div class="card-title">💼 Возможные направления профессий</div>';
+  html += '<p style="font-size:14px; margin:0;">' + escapeHtml(p.career) + '</p></div>';
+
+  html += '<div class="card"><div class="card-title">📊 Распределение по пакетам</div>';
+  html += '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
+  html += '<thead><tr><th style="border:1px solid #e0e8f0; padding:6px; background:#eef4fa;">Пакет</th><th style="border:1px solid #e0e8f0; padding:6px; background:#eef4fa;">Название</th><th style="border:1px solid #e0e8f0; padding:6px; background:#eef4fa;">Совп.</th></tr></thead><tbody>';
+  PROFILE_ORDER.forEach(function(pk){
+    var win = pk === kid.profile ? 'background:#d4edda; font-weight:700;' : '';
+    html += '<tr style="' + win + '">';
+    html += '<td style="border:1px solid #e0e8f0; padding:6px; text-align:center;">' + pk + '</td>';
+    html += '<td style="border:1px solid #e0e8f0; padding:6px;">' + PROFILES[pk].shortName + '</td>';
+    html += '<td style="border:1px solid #e0e8f0; padding:6px; text-align:center;">' + kid.counts[pk] + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<div class="btn-row">';
+  html += '<button class="btn btn-success btn-block" onclick="copyKidReport()">📋 Копировать отчёт</button>';
+  html += '</div>';
+  html += '<div class="btn-row">';
+  html += '<button class="btn btn-purple btn-block" onclick="openParentDoc()">👨‍👩‍👧 Документ родителям</button>';
+  html += '</div>';
+  html += '<div class="btn-row">';
+  html += '<button class="btn btn-outline btn-block" onclick="backToKid()">← К карточке</button>';
+  html += '</div>';
+
+  document.getElementById("resultContent").innerHTML = html;
+}
+
+/* ============================================================
+   ТЕСТЫ: ИНДИКАЦИЯ
+   ============================================================ */
+function updateAllTestStates(){
+  TESTS.forEach(function(t){
+    var row = document.querySelector('.test-row[data-test="' + t + '"]');
+    if(!row) return;
+    var checked = document.querySelector('input[name="' + t + '"]:checked');
+    row.classList.toggle("filled", !!checked);
+  });
+}
+
+document.addEventListener("change", function(e){
+  if(e.target.type === "radio"){
+    updateAllTestStates();
+    markDirty();
+  }
+});
+
+/* ============================================================
+   КОПИРОВАНИЕ ОТЧЁТА
+   ============================================================ */
+function copyKidReport(){
+  if(!currentKidId) return;
+  var kid = journal.kids.find(function(k){ return k.id === currentKidId; });
+  if(!kid || !kid.profile) return;
+  var p = PROFILES[kid.profile];
+  var lines = [];
+  lines.push("СПОРТИВНЫЙ ПАСПОРТ РЕБЁНКА");
+  lines.push("ФИО: " + kid.name);
+  lines.push("Возраст: " + (kid.age || "не указан"));
+  lines.push("Дата: " + kid.date);
+  lines.push("");
+  lines.push("Профиль: " + p.code + " — " + p.shortName);
+  lines.push("Совпадений: " + kid.maxCount + " из 12");
+  lines.push("");
+  lines.push("Рекомендованные виды спорта:");
+  lines.push(p.sports);
+  lines.push("");
+  lines.push("Особенности НС: " + p.psych);
+  lines.push("Факторы риска: " + p.risks);
+  lines.push("Школа: " + p.school);
+  lines.push("Профессии: " + p.career);
+  var text = lines.join("\n");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      alert("✅ Отчёт скопирован.");
+    }).catch(function(){
+      fallbackCopy(text);
+    });
+  } else { fallbackCopy(text); }
+}
+
+function fallbackCopy(text){
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed"; ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand("copy"); alert("✅ Отчёт скопирован."); }
+  catch(e){ alert("Не удалось скопировать."); }
+  document.body.removeChild(ta);
+}
+
+/* ============================================================
+   ДОКУМЕНТ РОДИТЕЛЯМ
+   ============================================================ */
+function openParentDoc(){
+  if(!currentKidId) return;
+  var kid = journal.kids.find(function(k){ return k.id === currentKidId; });
+  if(!kid || !kid.profile){ alert("Сначала рассчитайте профиль."); return; }
+  var p = PROFILES[kid.profile];
+  var html = '';
+  html += '<div style="font-family:Georgia,serif; color:#1a1a1a; line-height:1.55; font-size:15px;">';
+  html += '<div style="text-align:center; border-bottom:3px double #1a3a6b; padding-bottom:14px; margin-bottom:18px;">';
+  html += '<h2 style="margin:0 0 4px; color:#1a3a6b; font-size:19px;">РЕКОМЕНДАЦИИ ПО СПОРТИВНОЙ ПОДГОТОВКЕ</h2>';
+  html += '<div style="font-size:13px; color:#6b7c93; font-style:italic;">по результатам экспресс-диагностики врождённых задатков (4–6 лет)</div>';
+  html += '</div>';
+  html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; margin:16px 0; font-size:14px;">';
+  html += '<div style="display:flex; gap:8px; border-bottom:1px dotted #b0bcc9; padding-bottom:3px;"><span style="color:#6b7c93;">ФИО ребёнка:</span><strong>' + escapeHtml(kid.name) + '</strong></div>';
+  html += '<div style="display:flex; gap:8px; border-bottom:1px dotted #b0bcc9; padding-bottom:3px;"><span style="color:#6b7c93;">Возраст:</span><strong>' + escapeHtml(kid.age || "не указан") + '</strong></div>';
+  html += '<div style="display:flex; gap:8px; border-bottom:1px dotted #b0bcc9; padding-bottom:3px;"><span style="color:#6b7c93;">Дата осмотра:</span><strong>' + escapeHtml(kid.date) + '</strong></div>';
+  html += '<div style="display:flex; gap:8px; border-bottom:1px dotted #b0bcc9; padding-bottom:3px;"><span style="color:#6b7c93;">Проб:</span><strong>12</strong></div>';
+  html += '</div>';
+  html += '<div style="text-align:center; font-size:17px; font-weight:700; color:#1a3a6b; background:linear-gradient(135deg,#eef4fa,#e3f2fd); padding:14px; border-radius:10px; margin:14px 0; border:1px solid #cfe0f0;">';
+  html += 'Выявленный профиль: ' + p.code + ' — ' + p.shortName;
+  html += '<br><span style="font-size:13px; font-weight:400; color:#4a5568;">(совпадений: ' + kid.maxCount + ' из 12)</span>';
+  html += '</div>';
+  html += '<h3 style="color:#1a3a6b; font-size:16px; margin:20px 0 8px; border-left:4px solid #00a8e8; padding-left:10px;">🧠 Особенности нервной системы</h3>';
+  html += '<p>' + escapeHtml(p.psychoParent) + '</p>';
+  html += '<h3 style="color:#1a3a6b; font-size:16px; margin:20px 0 8px; border-left:4px solid #00a8e8; padding-left:10px;">🦴 Морфологические маркеры</h3>';
+  html += '<p>' + escapeHtml(p.morphoParent) + '</p>';
+  html += '<h3 style="color:#1a3a6b; font-size:16px; margin:20px 0 8px; border-left:4px solid #00a8e8; padding-left:10px;">🏅 Рекомендованные виды спорта</h3>';
+  html += '<div style="background:#f0f8f2; border-left:4px solid #28a745; padding:12px 16px; border-radius:6px; margin:10px 0;">';
+  html += '<div style="font-weight:700; color:#1a6b3a; font-size:15px;">' + escapeHtml(p.sportsParent) + '</div>';
+  html += '<div style="margin-top:8px; font-size:14px; color:#4a5568; font-style:italic;">' + escapeHtml(p.prepNote) + '</div>';
+  html += '</div>';
+  html += '<h3 style="color:#1a3a6b; font-size:16px; margin:20px 0 8px; border-left:4px solid #00a8e8; padding-left:10px;">⚠️ На что обратить внимание</h3>';
+  html += '<div style="background:#fdf2f2; border-left:4px solid #c0392b; padding:12px 16px; border-radius:6px; margin:10px 0;">' + escapeHtml(p.risksParent) + '</div>';
+  html += '<h3 style="color:#1a3a6b; font-size:16px; margin:20px 0 8px; border-left:4px solid #00a8e8; padding-left:10px;">📌 Общее заключение</h3>';
+  html += '<p>У ребёнка выявлен профиль <strong>' + p.code + ' — ' + p.shortName + '</strong>. Врождённые задатки наиболее ярко проявляются в направлении: <em>' + escapeHtml(p.sportsParent) + '</em>.</p>';
+  html += '<p>Данные рекомендации носят ознакомительный характер и не являются медицинским диагнозом. Окончательное решение рекомендуется принимать совместно с тренером после пробных занятий и наблюдения за ребёнком в течение 2–3 месяцев.</p>';
+  html += '<div style="margin-top:28px; display:flex; justify-content:space-between; gap:20px; font-size:14px; flex-wrap:wrap;">';
+  html += '<div style="flex:1 1 250px;"><div>Инструктор по спорту:</div><div style="border-bottom:1px solid #333; margin-top:28px; padding-bottom:2px;">' + escapeHtml(journal.instructorName || "") + '</div><div style="font-size:12px; color:#6b7c93; margin-top:4px;">Удостоверение ' + escapeHtml(journal.instructorId || "") + '</div></div>';
+  html += '<div style="flex:1 1 250px;"><div>Дата:</div><div style="border-bottom:1px solid #333; margin-top:28px; padding-bottom:2px;">' + escapeHtml(kid.date) + '</div></div>';
+  html += '</div>';
+  html += '<div style="margin-top:20px; font-size:12px; color:#6b7c93; text-align:center; font-style:italic; border-top:1px solid #e0e8f0; padding-top:10px;">Документ сформирован автоматически на основе экспресс-диагностики врождённых задатков. Возраст детей: 4–6 лет.</div>';
+  html += '</div>';
+  document.getElementById("modalBody").innerHTML = html;
+  document.getElementById("modalOverlay").classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+function closeParentDoc(){
+  document.getElementById("modalOverlay").classList.remove("show");
+  document.body.style.overflow = "";
+}
+
+function printParentDoc(){ window.print(); }
+
+function downloadParentDoc(){
+  if(!currentKidId) return;
+  var kid = journal.kids.find(function(k){ return k.id === currentKidId; });
+  if(!kid) return;
+  var content = document.getElementById("modalBody").innerHTML;
+  var full = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Рекомендации — ' + escapeHtml(kid.name) + '</title></head><body style="font-family:Georgia,serif; max-width:800px; margin:30px auto; padding:0 25px; line-height:1.55;">' + content + '</body></html>';
+  var blob = new Blob([full], { type: "text/html;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  var safe = (kid.name || "ребёнок").replace(/[^а-яА-Яa-zA-Z0-9\s-]/g,"").trim().replace(/\s+/g,"_") || "ребёнок";
+  a.download = "Рекомендации_" + safe + "_" + kid.date.replace(/\./g,"-") + ".html";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+/* ============================================================
+   ЭКСПОРТ / ИМПОРТ JSON
+   ============================================================ */
+function exportJSON(){
+  if(journal.kids.length === 0){ alert("Журнал пуст — нечего экспортировать."); return; }
+  var kids = getFilteredKids();
+  if(kids.length === 0){ alert("На выбранную дату нет детей — нечего экспортировать."); return; }
+  var fname;
+  if(currentFilterDate){
+    fname = "Журнал_экспресс-диагностики_" + currentFilterDate.replace(/\./g,"-") + ".json";
+  } else {
+    fname = "Журнал_экспресс-диагностики_ВСЕ-ДНИ_" + todayStr().replace(/\./g,"-") + ".json";
+  }
+  var data = { version: 3, exportedAt: new Date().toISOString(), date: currentFilterDate || null, kids: kids };
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+function importJSON(event){
+  var file = event.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var data = JSON.parse(e.target.result);
+      var kids = null;
+      if(Array.isArray(data)) kids = data;
+      else if(data && Array.isArray(data.kids)) kids = data.kids;
+      else throw new Error("Неверный формат файла");
+      var valid = kids.filter(function(k){ return k && k.id && k.name && k.answers; });
+      if(valid.length === 0){ alert("В файле не найдено корректных записей."); return; }
+      confirmDialog("Импорт JSON", "Найдено записей: " + valid.length + ".\n\nOK — ДОБАВИТЬ к текущему журналу.\nОтмена — заменить журнал полностью.", "Добавить", function(){
+        var existingIds = {};
+        journal.kids.forEach(function(k){ existingIds[k.id] = true; });
+        var added = 0;
+        valid.forEach(function(k){ if(!existingIds[k.id]){ journal.kids.push(k); added++; } });
+        saveJournal(); renderList();
+        alert("Добавлено: " + added + ". Пропущено дубликатов: " + (valid.length - added) + ".");
+      }, "Заменить полностью", function(){
+        journal.kids = valid;
+        saveJournal(); renderList();
+        alert("Журнал заменён. Записей: " + valid.length + ".");
+      });
+    }catch(err){ alert("Ошибка чтения: " + err.message); }
+    event.target.value = "";
+  };
+  reader.readAsText(file);
+}
+
+/* ============================================================
+   ПЕЧАТЬ
+   ============================================================ */
+function printBlank(){
+  var html = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Бланк группы</title>';
+  html += '<style>body{font-family:Arial,sans-serif; padding:20px;} h2{text-align:center; font-size:16px; margin:0 0 4px;} .sub{text-align:center; font-size:12px; color:#666; margin-bottom:14px;} table{width:100%; border-collapse:collapse; font-size:10px;} th,td{border:1px solid #333; padding:4px 2px; text-align:center;} th{background:#eee;} td.name{text-align:left; padding-left:6px; min-width:140px;} @media print{@page{size:A4 landscape; margin:10mm;}}</style></head><body>';
+  html += '<h2>Журнал экспресс-диагностики врождённых задатков</h2>';
+  html += '<div class="sub">Возраст детей 4–6 лет. Инструктор по спорту: _____________________ Дата: ____________</div>';
+  html += '<table><thead><tr><th>№</th><th>ФИО ребёнка</th>';
+  for(var i=1;i<=12;i++) html += '<th>Т' + i + '</th>';
+  html += '<th>ИТОГ</th></tr></thead><tbody>';
+  for(var r=1;r<=15;r++){
+    html += '<tr><td>' + r + '</td><td class="name"></td>';
+    for(var c=0;c<12;c++) html += '<td></td>';
+    html += '<td></td></tr>';
+  }
+  html += '</tbody></table>';
+  html += '<div style="margin-top:16px; font-size:10px; color:#666;">Маркеры: П1–П6. Итог — код доминирующего пакета.</div>';
+  html += '</body></html>';
+  var w = window.open("", "_blank");
+  if(!w){ alert("Разрешите всплывающие окна для печати."); return; }
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){ w.print(); }, 400);
+}
+
+function printSummary(anonym){
+  if(journal.kids.length === 0){ alert("Журнал пуст."); return; }
+  var html = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Сводная ведомость</title>';
+  html += '<style>body{font-family:Arial,sans-serif; padding:20px;} h2{text-align:center; font-size:16px;} .sub{text-align:center; font-size:12px; color:#666; margin-bottom:14px;} table{width:100%; border-collapse:collapse; font-size:11px;} th,td{border:1px solid #333; padding:5px 4px;} th{background:#eee;} td.name{text-align:left;} .mark{background:#fff3cd; padding:2px 6px; border-radius:4px; font-size:10px; color:#856404; float:right;}</style></head><body>';
+  html += '<h2>Сводная ведомость экспресс-диагностики</h2>';
+  if(anonym) html += '<div class="mark">ОБЕЗЛИЧЕННЫЙ ВАРИАНТ</div>';
+  html += '<div class="sub">Дата: ____________ Инструктор: _____________________</div>';
+  html += '<table><thead><tr><th style="width:40px;">№</th><th>Ребёнок</th><th style="width:70px;">Возраст</th><th style="width:60px;">Профиль</th><th>Рекомендованные виды спорта</th></tr></thead><tbody>';
+  journal.kids.forEach(function(k, i){
+    var name = anonym ? ("Ребёнок №" + (i+1)) : k.name;
+    var p = k.profile ? PROFILES[k.profile] : null;
+    var prof = p ? p.code : "—";
+    var sports = p ? p.sports : "не рассчитан";
+    html += '<tr><td style="text-align:center;">' + (i+1) + '</td><td class="name">' + escapeHtml(name) + '</td><td style="text-align:center;">' + escapeHtml(k.age || "—") + '</td><td style="text-align:center;"><strong>' + prof + '</strong></td><td>' + escapeHtml(sports) + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  html += '<div style="margin-top:14px; font-size:10px; color:#666;">Для внутреннего использования. Персональные данные — не для распространения.</div>';
+  html += '</body></html>';
+  var w = window.open("", "_blank");
+  if(!w){ alert("Разрешите всплывающие окна для печати."); return; }
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){ w.print(); }, 400);
+}
+
+/* ============================================================
+   ПАМЯТКА
+   ============================================================ */
+function openHelp(){ showScreen("screenHelp"); }
+function closeHelp(){ showScreen("screenList"); }
+
+/* ============================================================
+   ПОДТВЕРЖДЕНИЕ
+   ============================================================ */
+function confirmDialog(title, text, okLabel, onOk, altLabel, onAlt){
+  document.getElementById("confirmTitle").textContent = title;
+  document.getElementById("confirmText").textContent = text;
+  var footer = document.querySelector("#confirmOverlay .modal-body .btn-row");
+  if(!footer){
+    if(confirm(title + "\n\n" + text)){
+      if(onOk) onOk();
+    }
+    return;
+  }
+  footer.innerHTML = '';
+  var cancelBtn = document.createElement("button");
+  cancelBtn.className = "btn btn-gray";
+  cancelBtn.textContent = "Отмена";
+  cancelBtn.onclick = closeConfirm;
+  footer.appendChild(cancelBtn);
+  if(altLabel && onAlt){
+    var altBtn = document.createElement("button");
+    altBtn.className = "btn btn-primary";
+    altBtn.textContent = altLabel;
+    altBtn.onclick = function(){ closeConfirm(); onAlt(); };
+    footer.appendChild(altBtn);
+  }
+  var mainBtn = document.createElement("button");
+  mainBtn.className = "btn btn-danger";
+  mainBtn.textContent = okLabel || "OK";
+  mainBtn.onclick = function(){ closeConfirm(); if(onOk) onOk(); };
+  footer.appendChild(mainBtn);
+  document.getElementById("confirmOverlay").classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+function closeConfirm(){
+  document.getElementById("confirmOverlay").classList.remove("show");
+  document.body.style.overflow = "";
+}
+
+/* ============================================================
+   УТИЛИТЫ
+   ============================================================ */
+function escapeHtml(str){
+  if(!str) return "";
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+function todayStr(){
+  var d = new Date();
+  var dd = String(d.getDate()).padStart(2,"0");
+  var mm = String(d.getMonth()+1).padStart(2,"0");
+  var yyyy = d.getFullYear();
+  return dd + "." + mm + "." + yyyy;
+}
+
+/* ============================================================
+   ИНИЦИАЛИЗАЦИЯ
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", function(){
+  loadJournal();
+  renderList();
+  updateDateBar();
+  loadInstructor();
+  var dateField = document.getElementById("kidDate");
+  if(dateField && !dateField.value) dateField.value = todayStr();
+  document.getElementById("modalOverlay").addEventListener("click", function(e){
+    if(e.target === this) closeParentDoc();
+  });
+  document.getElementById("confirmOverlay").addEventListener("click", function(e){
+    if(e.target === this) closeConfirm();
+  });
+});
+</script>
+
+</body>
+</html>
